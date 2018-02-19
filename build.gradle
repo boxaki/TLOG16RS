@@ -1,0 +1,39 @@
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.4.0'
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+scmVersion {
+    versionCreator 'versionWithBranch'
+}
+project.version = scmVersion.version
+
+project.ext {
+    dropwizardVersion = '1.2.4'   
+}
+
+
+mainClassName = "com.akos_varga.tlog16rs.TLOG16RSApplication"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.20'
+    testCompile group: 'junit', name: 'junit', version: '4.10'
+    compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion		
+        
+}
+
+run {
+ args 'server'
+}
+

@@ -1,0 +1,59 @@
+package com.akos_varga.tlog16rs.resources;
+
+import com.akos_varga.tlog16rs.core.beans.Task;
+import com.akos_varga.tlog16rs.core.beans.TimeLogger;
+import com.akos_varga.tlog16rs.core.beans.WorkDay;
+import com.akos_varga.tlog16rs.core.beans.WorkMonth;
+
+/**
+ *
+ * @author Akos Varga
+ */
+public class Service {    
+    
+    public static boolean isNewMonth(TimeLogger timelogger,int year, int month) {
+        return getMonth(timelogger, year, month) == null;
+    }
+
+    public static WorkMonth getMonth(TimeLogger timelogger, int year, int month) {
+        for (WorkMonth existingMonth : timelogger.getMonths()) {
+            if (existingMonth.getDate().getYear() == year && existingMonth.getDate().getMonthValue() == month) {
+                return existingMonth;
+            }
+        }
+        return null;
+    }
+
+    public static boolean isNewDay(TimeLogger timelogger, int year, int month, int day) {
+        return getDay(timelogger, year, month, day) == null;
+    }
+
+    public static WorkDay getDay(TimeLogger timelogger, int year, int month, int day) {
+        WorkMonth workMonth = getMonth(timelogger, year, month);
+        if (workMonth != null) {
+            for (WorkDay existingDay : workMonth.getDays()) {
+                if (existingDay.getActualDay().getDayOfMonth() == day) {
+                    return existingDay;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static boolean isNewTask(TimeLogger timelogger, String taskId, int year, int month, int day, String startTime) {
+        return getTask(timelogger, taskId, year, month, day, startTime) == null;
+    }
+
+    public static Task getTask(TimeLogger timelogger, String taskId, int year, int month, int day, String startTime) {
+        WorkDay workDay = getDay(timelogger, year, month, day);
+        if (workDay != null) {
+            for (Task existingTask : workDay.getTasks()) {
+                if (existingTask.getTaskId().equals(taskId) && existingTask.getStartTime().toString().equals(startTime)) {
+                    return existingTask;
+                }
+            }
+        }
+        return null;
+    }
+    
+}

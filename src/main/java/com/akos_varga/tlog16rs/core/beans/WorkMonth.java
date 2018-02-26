@@ -1,6 +1,11 @@
 package com.akos_varga.tlog16rs.core.beans;
 
 import com.akos_varga.tlog16rs.core.exceptions.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.io.IOException;
 import java.time.*;
 import java.util.*;
 
@@ -16,6 +21,7 @@ public class WorkMonth {
     private final static boolean WEEKEND_DISABLED = false;
     
     private final List<WorkDay> days;
+    @JsonSerialize(using = YearMonthSerializer.class)
     private final YearMonth date;
     private long sumPerMonth;
     private long requiredMinPerMonth;
@@ -115,5 +121,17 @@ public class WorkMonth {
         else{
             throw new WeekendNotEnabledException("Weekend date cannot be set!");
         }
+    }
+
+    private static class YearMonthSerializer extends JsonSerializer<YearMonth>{
+
+        public YearMonthSerializer() {
+        }
+
+        @Override
+        public void serialize(YearMonth t, JsonGenerator jg, SerializerProvider sp) throws IOException {
+            jg.writeString(t.toString());
+        }
+        
     }
 }

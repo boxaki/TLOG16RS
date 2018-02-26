@@ -1,6 +1,11 @@
 package com.akos_varga.tlog16rs.core.beans;
 
 import com.akos_varga.tlog16rs.core.exceptions.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.io.IOException;
 import java.time.*;
 import java.util.*;
 
@@ -12,12 +17,13 @@ import java.util.*;
  */
 @lombok.Getter
 public class WorkDay {
-
+    
     private final static int DEFAULT_REQUIRED_MIN_PER_DAY = 450;
     private final static LocalDate DEFAULT_ACTUAL_DAY = LocalDate.now();
-
+    
     private final List<Task> tasks;
     private long requiredMinPerDay;
+    @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate actualDay;
     private long sumPerDay;
 
@@ -100,12 +106,12 @@ public class WorkDay {
     }
 
     /**
-     * 
-     * @return the sum of the work hours for the day in minutes. 
+     *
+     * @return the sum of the work hours for the day in minutes.
      * @throws EmptyTimeFieldException if start time or end time is missing.
      */
     public long getSumPerDay() throws EmptyTimeFieldException {
-
+        
         sumPerDay = 0;
         for (Task t : tasks) {
             sumPerDay += t.getMinPerTask();
@@ -114,14 +120,16 @@ public class WorkDay {
     }
 
     /**
-     * @return the difference between the sum of the work minutes and the required minutes for the day. 
+     * @return the difference between the sum of the work minutes and the
+     * required minutes for the day.
      */
     public long getExtraMinPerDay() throws EmptyTimeFieldException {
         return getSumPerDay() - getRequiredMinPerDay();
     }
 
     /**
-     * @return the end time of the latest task for a day or return <code>null</code> if no tasks has been added.  
+     * @return the end time of the latest task for a day or return
+     * <code>null</code> if no tasks has been added.
      */
     public LocalTime getEndTimeOfLatestTask() throws EmptyTimeFieldException {
         if (tasks.isEmpty()) {
@@ -129,14 +137,14 @@ public class WorkDay {
         }
         return tasks.get(tasks.size() - 1).getEndTime();
     }
-
+    
     private void setRequiredMinOrThrowIfNegative(long requiredMin) throws NegativeMinutesOfWorkException {
         if (requiredMin < 0) {
             throw new NegativeMinutesOfWorkException("Required minutes for a day cannot be negative!");
         }
         this.requiredMinPerDay = requiredMin;
     }
-
+    
     private void setActualDayOrThrowIfFutureDay(LocalDate date) throws FutureWorkException {
         LocalDate today = LocalDate.now();
         if (date.isAfter(today)) {
@@ -144,5 +152,13 @@ public class WorkDay {
         }
         this.actualDay = date;
     }
-
+    
+    private static class LocalDateSerializer extends JsonSerializer<LocalDate> {        
+        @Override
+        public void serialize(LocalDate t, JsonGenerator jg, SerializerProvider sp) throws IOException {
+            jg.writeString(t.toString());
+        }
+        
+    }
+    
 }

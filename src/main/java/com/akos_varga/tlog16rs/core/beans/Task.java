@@ -1,6 +1,11 @@
 package com.akos_varga.tlog16rs.core.beans;
 
 import com.akos_varga.tlog16rs.core.exceptions.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.io.IOException;
 import java.time.*;
 
 /**
@@ -17,7 +22,9 @@ public class Task {
     private static final String VALID_LT_TASKID = "LT-\\d{4}";
 
     private String taskId;
+    @JsonSerialize(using = LocalTimeSerializer.class)
     private LocalTime startTime;
+    @JsonSerialize(using = LocalTimeSerializer.class)
     private LocalTime endTime;
     private String comment;
 
@@ -217,6 +224,13 @@ public class Task {
             end = endTime.toString();
         }
         return String.format("Id:%12s   started:%-10s   finished:%-10s \"%s\"", taskId, startTime.toString(), end, comment);
+    }
+
+    private static class LocalTimeSerializer extends JsonSerializer<LocalTime> {
+        @Override
+        public void serialize(LocalTime t, JsonGenerator jg, SerializerProvider sp) throws IOException {
+            jg.writeString(t.toString());
+        }
     }
 
 }

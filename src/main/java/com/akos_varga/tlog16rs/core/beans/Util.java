@@ -12,11 +12,15 @@ import java.util.*;
 public class Util {
 
     /**
-     * Rounds a time interval to the multiples of 15 minutes. Only sets the end time if it needs changing.
-     * 
-     * @return an end time that has a interval together with startTime that is multiple of 15 minutes.
-     * @throws EmptyTimeFieldException if <code>startTime</code> or <code>endTime</code> has missing time field.
-     * @throws NotExpectedTimeOrderException if <code>startTime</code> is after <code>endTime</code>.
+     * Rounds a time interval to the multiples of 15 minutes. Only sets the end
+     * time if it needs changing.
+     *
+     * @return an end time that has a interval together with startTime that is
+     * multiple of 15 minutes.
+     * @throws EmptyTimeFieldException if <code>startTime</code> or
+     * <code>endTime</code> has missing time field.
+     * @throws NotExpectedTimeOrderException if <code>startTime</code> is after
+     * <code>endTime</code>.
      */
     public static LocalTime roundToMultipleQuarterHour(LocalTime startTime, LocalTime endTime) throws EmptyTimeFieldException, NotExpectedTimeOrderException {
         if (!isMultipleQuarterHour(startTime, endTime)) {
@@ -31,11 +35,12 @@ public class Util {
     /**
      * @param newTask
      * @param existingTasks
-     * @return <code>true</code> if <code>newTask</code> has a common time interval with any task in <code>existingTasks</code>.
-     * @throws EmptyTimeFieldException if <code>newTask</code> has missing time field. 
+     * @return <code>true</code> if <code>newTask</code> has a common time
+     * interval with any task in <code>existingTasks</code>.
+     * @throws EmptyTimeFieldException if <code>newTask</code> has missing time
+     * field.
      */
-    public static boolean isSeparatedTime(Task newTask, List<Task> existingTasks) throws EmptyTimeFieldException {
-        //Task matchingTask;
+    public static boolean isSeparatedTime(Task newTask, List<Task> existingTasks) throws EmptyTimeFieldException {        
         LocalTime newTaskStartTime = newTask.getStartTime();
         LocalTime newTaskEndTime = newTask.getEndTime();
         /*
@@ -47,16 +52,16 @@ public class Util {
         for (Task existingTask : existingTasks) {
             LocalTime existingTaskStartTime = existingTask.getStartTime();
             LocalTime existingTaskEndTime = existingTask.getEndTime();
-            if( existingTaskStartTime.equals(existingTaskEndTime) && (!existingTaskStartTime.isBefore(newTaskStartTime) && existingTaskStartTime.isBefore(newTaskEndTime))){
+            if (existingTaskStartTime.equals(existingTaskEndTime) && existingTaskStartTime.equals(newTaskStartTime)) {
                 return false;
             }
-            if( newTaskStartTime.equals(newTaskEndTime) && (!newTaskStartTime.isBefore(existingTaskStartTime) && newTaskStartTime.isBefore(existingTaskEndTime)) ){
-                return false;                
+            if (newTaskStartTime.equals(newTaskEndTime) && newTaskStartTime.equals(existingTaskStartTime)) {
+                return false;
             }
             if (existingTask.getStartTime().isBefore(newTask.getEndTime()) && newTask.getStartTime().isBefore(existingTask.getEndTime())) {
                 return false;
-            }
-        }
+            }        
+        }        
         return true;
     }
 
@@ -66,10 +71,14 @@ public class Util {
     }
 
     /**
-     * 
-     * @return <code>true</code> if the time interval between <code>startTime</code> and <code>endTime</code> is multiple of 15 minutes <code>false</code> otherwise.
-     * @throws EmptyTimeFieldException if <code>startTime</code> or <code>endTime</code> has missing time field.
-     * @throws NotExpectedTimeOrderException if <code>startTime</code> is after <code>endTime</code>
+     *
+     * @return <code>true</code> if the time interval between
+     * <code>startTime</code> and <code>endTime</code> is multiple of 15 minutes
+     * <code>false</code> otherwise.
+     * @throws EmptyTimeFieldException if <code>startTime</code> or
+     * <code>endTime</code> has missing time field.
+     * @throws NotExpectedTimeOrderException if <code>startTime</code> is after
+     * <code>endTime</code>
      */
     public static boolean isMultipleQuarterHour(LocalTime startTime, LocalTime endTime) throws EmptyTimeFieldException, NotExpectedTimeOrderException {
         if (startTime == null || endTime == null) {
@@ -80,7 +89,7 @@ public class Util {
         }
         return isMultipleQuarterHour(Duration.between(startTime, endTime).toMinutes());
     }
-    
+
     public static boolean isMultipleQuarterHour(long minutes) {
         return minutes % 15 == 0;
     }

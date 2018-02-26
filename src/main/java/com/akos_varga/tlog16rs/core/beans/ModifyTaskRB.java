@@ -7,10 +7,14 @@ package com.akos_varga.tlog16rs.core.beans;
 @lombok.NoArgsConstructor
 @lombok.Getter
 @lombok.Setter
-public class DeleteTaskRB {
+public class ModifyTaskRB {
     private int year;
     private int month;
     private int day;
     private String taskId;
-    private String startTime;           
+    private String startTime;
+    private String newTaskId;    
+    private String newStartTime;
+    private String newEndTime;
+    private String newComment;    
 }

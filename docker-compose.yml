@@ -1,0 +1,20 @@
+version: '2'
+services:
+  mariadb:
+    image: mariadb:5.5
+    container_name: mariadb
+    networks:
+    - tlog
+    volumes:
+    - "./database:/var/lib/mysql"
+    ports:
+    - "9001:3306"
+    environment:
+    - MYSQL_DATABASE=timelogger
+    - MYSQL_USER=timelogger
+    - MYSQL_PASSWORD=633Ym2aZ5b9Wtzh4EJc4pANx
+    - MYSQL_ROOT_PASSWORD=633Ym2aZ5b9Wtzh4EJc4pANx
+networks:
+  tlog:
+    driver: bridge
+

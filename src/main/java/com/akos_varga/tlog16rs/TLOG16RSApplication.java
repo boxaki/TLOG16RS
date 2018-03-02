@@ -1,5 +1,6 @@
 package com.akos_varga.tlog16rs;
 
+import com.akos_varga.tlog16rs.resources.CreateDatabase;
 import com.akos_varga.tlog16rs.resources.TLOG16RSResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -25,6 +26,8 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
         environment.jersey().register(new TLOG16RSResource());
+        environment.jersey().register(new CreateDatabase());
+        
     }
 
 }

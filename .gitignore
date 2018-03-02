@@ -2,3 +2,6 @@ build/
 .nb-gradle/
 .gradle
 javadoc/
+database/
+*.sql
+.nb-gradle-properties

@@ -73,21 +73,21 @@ public class Service {
 
     public static WorkDay addNewWorkDay(TimeLogger timelogger, int year, int month, int day) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, NotNewMonthException, FutureWorkException {
         WorkDay newWorkDay = new WorkDay(year, month, day);
-        WorkMonth workMonth = getWorkMonthOrCreateIfNotExist(timelogger, year, month, day);
+        WorkMonth workMonth = getWorkMonthOrCreateIfNotExist(timelogger, year, month);
         workMonth.addWorkDay(newWorkDay);
 
         return newWorkDay;
     }
 
-    public static WorkMonth getWorkMonthOrCreateIfNotExist(TimeLogger timelogger, int year, int month, int day) throws NotNewMonthException {
+    public static WorkMonth getWorkMonthOrCreateIfNotExist(TimeLogger timelogger, int year, int month) throws NotNewMonthException {
         WorkMonth workMonth = getMonth(timelogger, year, month);
         if (workMonth == null) {
-            workMonth = addNewWorkMonth(timelogger, year, month, day);
+            workMonth = addNewWorkMonth(timelogger, year, month);
         }
         return workMonth;
     }
 
-    private static WorkMonth addNewWorkMonth(TimeLogger timelogger, int year, int month, int day) throws NotNewMonthException {
+    private static WorkMonth addNewWorkMonth(TimeLogger timelogger, int year, int month) throws NotNewMonthException {
         WorkMonth newWorkMonth = new WorkMonth(year, month);
         timelogger.addNewMonth(newWorkMonth);
         return newWorkMonth;

@@ -29,26 +29,27 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Path("/timelogger/save/test")
 public class CreateDatabase {
-    
+
     private DataSourceConfig sourceConfig;
     private ServerConfig serverConfig;
     private EbeanServer ebeanServer;
-    private static final String URL = "jdbc:mariadb://127.0.0.1:9001/timelogger";
-    private static final String USERNAME= "timelogger";
-    private static final String PASSWORD = "633Ym2aZ5b9Wtzh4EJc4pANx";
-    
-    public CreateDatabase(){
+    private static final String SERVER_CONFIG_NAME = System.getProperty("servername");
+    private static final String DRIVER = System.getProperty("driver");
+    private static final String URL = System.getProperty("url");
+    private static final String USERNAME = System.getProperty("username"); 
+    private static final String PASSWORD = System.getProperty("password"); 
+
+    public CreateDatabase() {        
         updateSchema();
         initDataSourceConfig();
         initServerConfing();
-        ebeanServer = EbeanServerFactory.create(serverConfig);        
-    } 
-    
+        ebeanServer = EbeanServerFactory.create(serverConfig);
+    }
+
     private void updateSchema() {
-        
         try {
-            DriverManager.registerDriver(new org.mariadb.jdbc.Driver() );
-            
+            DriverManager.registerDriver(new org.mariadb.jdbc.Driver());
+
             Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             DatabaseConnection databaseConnection = new JdbcConnection(connection);
             Liquibase liquibase = new Liquibase("migrations.xml", new ClassLoaderResourceAccessor(), databaseConnection);
@@ -56,37 +57,36 @@ public class CreateDatabase {
         } catch (SQLException | LiquibaseException ex) {
             log.error(ex.getMessage());
         }
-                
-        
+
     }
-    
-    private void initDataSourceConfig(){
+
+    private void initDataSourceConfig() {
         sourceConfig = new DataSourceConfig();
-        sourceConfig.setDriver("org.mariadb.jdbc.Driver");
-        sourceConfig.setUrl("jdbc:mariadb://127.0.0.1:9001/timelogger");
-        sourceConfig.setUsername("timelogger");
-        sourceConfig.setPassword("633Ym2aZ5b9Wtzh4EJc4pANx");
+        sourceConfig.setDriver(DRIVER); 
+        sourceConfig.setUrl(URL); 
+        sourceConfig.setUsername(USERNAME); 
+        sourceConfig.setPassword(PASSWORD); 
     }
-    
-    private void initServerConfing(){
+
+    private void initServerConfing() {
         serverConfig = new ServerConfig();
-        serverConfig.setName("timelogger");
+        serverConfig.setName(SERVER_CONFIG_NAME);
         serverConfig.setDdlGenerate(false);
         serverConfig.setDdlRun(false);
         serverConfig.setRegister(true);
         serverConfig.setDataSourceConfig(sourceConfig);
         serverConfig.addClass(TestEntity.class);
-        serverConfig.setDefaultServer(true);        
+        serverConfig.setDefaultServer(true);
     }
-    
+
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
-    public String saveEntity(String testData){
+    public String saveEntity(String testData) {
         TestEntity entity = new TestEntity();
-        entity.setText(testData);        
+        entity.setText(testData);
         Ebean.save(entity);
         return testData;
     }
-    
+
 }

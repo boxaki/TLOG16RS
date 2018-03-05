@@ -37,9 +37,9 @@ dependencies {
 }
 
 run {
- args 'server'
+ args 'server' 
 }
-
+ 
 classes.doLast{
     javaexec{ // Ebean enhancement
         classpath =  sourceSets.main.compileClasspath

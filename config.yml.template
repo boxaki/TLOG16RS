@@ -1,0 +1,5 @@
+dbDriver: {{ .Env.DB_DRIVER }}
+dbUrl: {{ .Env.DB_URL }}
+dbUsername: {{ .Env.DB_USERNAME }}
+dbPassword: {{ .Env.DB_PASSWORD }}
+dbServer_name: {{ .Env.DB_SERVER_NAME }}

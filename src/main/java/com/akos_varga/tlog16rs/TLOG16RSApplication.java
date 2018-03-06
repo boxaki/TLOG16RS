@@ -33,7 +33,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {   
         environment.jersey().register(new TLOG16RSResource());
-        environment.jersey().register(new CreateDatabase());
+        environment.jersey().register(new CreateDatabase(configuration));
         
     }
 

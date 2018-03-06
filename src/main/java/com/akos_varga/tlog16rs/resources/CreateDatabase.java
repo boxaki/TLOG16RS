@@ -1,5 +1,6 @@
 package com.akos_varga.tlog16rs.resources;
 
+import com.akos_varga.tlog16rs.TLOG16RSConfiguration;
 import com.akos_varga.tlog16rs.entities.TestEntity;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -33,44 +34,38 @@ public class CreateDatabase {
     private DataSourceConfig sourceConfig;
     private ServerConfig serverConfig;
     private EbeanServer ebeanServer;
-    private static final String SERVER_CONFIG_NAME = System.getProperty("servername");
-    private static final String DRIVER = System.getProperty("driver");
-    private static final String URL = System.getProperty("url");
-    private static final String USERNAME = System.getProperty("username"); 
-    private static final String PASSWORD = System.getProperty("password"); 
-
-    public CreateDatabase() {        
-        updateSchema();
-        initDataSourceConfig();
-        initServerConfing();
+    
+    public CreateDatabase(TLOG16RSConfiguration config) {        
+        updateSchema(config);
+        initDataSourceConfig(config);
+        initServerConfing(config);
         ebeanServer = EbeanServerFactory.create(serverConfig);
     }
 
-    private void updateSchema() {
+    private void updateSchema(TLOG16RSConfiguration config) {
         try {
             DriverManager.registerDriver(new org.mariadb.jdbc.Driver());
 
-            Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            Connection connection = DriverManager.getConnection(config.getUrl(), config.getUsername(), config.getPassword());
             DatabaseConnection databaseConnection = new JdbcConnection(connection);
             Liquibase liquibase = new Liquibase("migrations.xml", new ClassLoaderResourceAccessor(), databaseConnection);
             liquibase.update(new Contexts());
         } catch (SQLException | LiquibaseException ex) {
             log.error(ex.getMessage());
         }
-
     }
 
-    private void initDataSourceConfig() {
+    private void initDataSourceConfig(TLOG16RSConfiguration config) {
         sourceConfig = new DataSourceConfig();
-        sourceConfig.setDriver(DRIVER); 
-        sourceConfig.setUrl(URL); 
-        sourceConfig.setUsername(USERNAME); 
-        sourceConfig.setPassword(PASSWORD); 
+        sourceConfig.setDriver(config.getDriver()); 
+        sourceConfig.setUrl(config.getUrl()); 
+        sourceConfig.setUsername(config.getUsername()); 
+        sourceConfig.setPassword(config.getPassword()); 
     }
 
-    private void initServerConfing() {
+    private void initServerConfing(TLOG16RSConfiguration config) {
         serverConfig = new ServerConfig();
-        serverConfig.setName(SERVER_CONFIG_NAME);
+        serverConfig.setName(config.getServer_name());
         serverConfig.setDdlGenerate(false);
         serverConfig.setDdlRun(false);
         serverConfig.setRegister(true);

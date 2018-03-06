@@ -1,0 +1,5 @@
+driver: org.mariadb.jdbc.Driver
+url: jdbc:mariadb://127.0.0.1:9001/timelogger
+username: timelogger
+password: 633Ym2aZ5b9Wtzh4EJc4pANx
+server_name: timelogger

@@ -25,11 +25,14 @@ public class TimeLogger {
     @Id
     @GeneratedValue
     private Integer id;
+    
+    private String name;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private final List<WorkMonth> months;
 
-    public TimeLogger() {
+    public TimeLogger(String name) {
+        this.name = name;
         months = new ArrayList<>();
     }
 

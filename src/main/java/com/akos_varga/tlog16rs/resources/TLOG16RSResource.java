@@ -39,7 +39,7 @@ public class TLOG16RSResource {
         server = database.getEbeanServer();
         timelogger = server.find(TimeLogger.class).findUnique();
         if (timelogger == null) {
-            timelogger = new TimeLogger();
+            timelogger = new TimeLogger("Akos Varga");
         }
     }
 
@@ -181,7 +181,7 @@ public class TLOG16RSResource {
     public List<WorkMonth> deleteAll() {
         //vagy toroljem a honapokat, akkor marad az id
         server.delete(timelogger);
-        timelogger = new TimeLogger();
+        timelogger = new TimeLogger("Akos Varga");
         server.save(timelogger);
 
         if (timelogger.getMonths().isEmpty()) {

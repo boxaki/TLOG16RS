@@ -1,5 +1,6 @@
-package com.akos_varga.tlog16rs.core.beans;
+package com.akos_varga.tlog16rs.entities;
 
+import com.akos_varga.tlog16rs.core.beans.Util;
 import com.akos_varga.tlog16rs.core.exceptions.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -8,6 +9,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.IOException;
 import java.time.*;
 import java.util.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents a work day that can contain Task(s).
@@ -15,12 +24,18 @@ import java.util.*;
  * @author Akos Varga
  * @version 0.5.0
  */
-@lombok.Getter
+@Getter
+@Entity
 public class WorkDay {
     
     private final static int DEFAULT_REQUIRED_MIN_PER_DAY = 450;
     private final static LocalDate DEFAULT_ACTUAL_DAY = LocalDate.now();
     
+    @Setter
+    @Id
+    @GeneratedValue
+    private Integer id;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private final List<Task> tasks;
     private long requiredMinPerDay;
     @JsonSerialize(using = LocalDateSerializer.class)

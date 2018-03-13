@@ -1,5 +1,6 @@
-package com.akos_varga.tlog16rs.core.beans;
+package com.akos_varga.tlog16rs.entities;
 
+import com.akos_varga.tlog16rs.core.beans.Util;
 import com.akos_varga.tlog16rs.core.exceptions.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -7,26 +8,36 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.IOException;
 import java.time.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Represents a task that has an id a time interval and an optional comment.
- *
+ * Represents a task that has an id a time interval and an optional comment. 
  *
  * @author Akos Varga
  * @version 0.5.0
  */
-@lombok.Getter
+@Getter
+@Entity
 public class Task {
 
     private static final String VALID_REDMINE_TASKID = "\\d{4}";
     private static final String VALID_LT_TASKID = "LT-\\d{4}";
 
+    @Setter
+    @Id
+    @GeneratedValue    
+    private Integer id;
     private String taskId;
     @JsonSerialize(using = LocalTimeSerializer.class)
     private LocalTime startTime;
     @JsonSerialize(using = LocalTimeSerializer.class)
     private LocalTime endTime;
     private String comment;
+    private long min_per_task;
 
     /**
      * Constructs a new Task if the parameter is a valid Id. Leaves the time
@@ -38,7 +49,7 @@ public class Task {
      * @throws NoTaskIdException if taskId is <code>null</code>.
      */
     public Task(String taskId) throws InvalidTaskIdException, NoTaskIdException {
-        setTaskId(taskId);
+        setTaskId(taskId);        
         this.comment = "";
     }
 
@@ -126,7 +137,7 @@ public class Task {
         if (startTime == null) {
             throw new EmptyTimeFieldException("Missing start time!");
         }
-        setStartTime(LocalTime.parse(startTime));
+        setStartTime(LocalTime.parse(startTime));        
     }
 
     /**
@@ -146,6 +157,7 @@ public class Task {
         } else {
             throw new NotExpectedTimeOrderException("Start time must not be later than end time!");
         }
+        setMinPerTask();
     }
 
     /**
@@ -198,6 +210,7 @@ public class Task {
         } else {
             throw new NotExpectedTimeOrderException("Start time must not be later than end time!");
         }
+        setMinPerTask();
     }
 
     public final void setComment(String comment) {
@@ -230,6 +243,12 @@ public class Task {
         @Override
         public void serialize(LocalTime t, JsonGenerator jg, SerializerProvider sp) throws IOException {
             jg.writeString(t.toString());
+        }
+    }
+    
+    private void setMinPerTask(){
+        if(startTime != null && endTime != null){
+            min_per_task = Duration.between(startTime, endTime).toMinutes();
         }
     }
 

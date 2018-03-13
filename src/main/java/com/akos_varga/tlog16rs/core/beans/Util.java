@@ -1,5 +1,6 @@
 package com.akos_varga.tlog16rs.core.beans;
 
+import com.akos_varga.tlog16rs.entities.Task;
 import com.akos_varga.tlog16rs.core.exceptions.*;
 import java.time.*;
 import java.util.*;

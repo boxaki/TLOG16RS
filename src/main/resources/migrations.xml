@@ -4,13 +4,84 @@
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd">
 
-    <changeSet id="1" author="name">
-        <createTable tableName="test">
+    <changeSet id="1" author="akos_varga">
+        <createTable tableName="time_logger">
             <column name="id" type="int" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-            <column name="text" type="varchar(255)"/>
+                <constraints primaryKey="true" nullable="false"/>
+            </column>            
         </createTable>
     </changeSet>
-
+    
+    <changeSet id="2" author="akos_varga">
+        <createTable tableName="work_month">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="time_logger_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sum_per_month" type="int"/>
+            <column name="required_min_per_month" type="int"/>
+            <column name="extra_min_per_month" type="int"/>
+            <column name="date" type="varchar(7)"/>
+        </createTable>
+        <addForeignKeyConstraint                         
+            baseTableName="work_month" 
+            baseColumnNames="time_logger_id" 
+            constraintName="fk_work_month_timelogger" 
+            referencedTableName="time_logger" 
+            referencedColumnNames="id" 
+            onDelete="CASCADE" 
+            onUpdate="RESTRICT"            
+        />
+    </changeSet>
+        
+    <changeSet id="3" author="akos_varga">
+        <createTable tableName="work_day">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="work_month_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="required_min_per_day" type="int"/>
+            <column name="extra_min_per_day" type="int"/>
+            <column name="actual_day" type="date"/>
+            <column name="sum_per_day" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint 
+            baseTableName="work_day" 
+            baseColumnNames="work_month_id" 
+            constraintName="fk_work_day_work_month" 
+            referencedTableName="work_month" 
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            onUpdate="RESTRICT"
+        />
+    </changeSet>
+    <changeSet id="4" author="akos_varga">
+        <createTable tableName="task">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="work_day_id" type="int">
+                <constraints nullable="false"/>
+            </column>                
+            <column name="task_id" type="varchar(7)"/>
+            <column name="start_time" type="time"/>
+            <column name="end_time" type="time"/>
+            <column name="comment" type="varchar(255)"/>
+            <column name="min_per_task" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint 
+            baseTableName="task" 
+            baseColumnNames="work_day_id" 
+            constraintName="fk_task_work_day" 
+            referencedTableName="work_day" 
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            onUpdate="RESTRICT"
+        />
+    </changeSet>    
+    
 </databaseChangeLog>

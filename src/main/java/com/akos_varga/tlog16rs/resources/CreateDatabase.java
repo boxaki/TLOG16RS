@@ -65,7 +65,7 @@ public class CreateDatabase {
 
     private void initServerConfing(TLOG16RSConfiguration config) {
         serverConfig = new ServerConfig();
-        serverConfig.setName(config.getServer_name());
+        serverConfig.setName(config.getServerName());
         serverConfig.setDdlGenerate(false);
         serverConfig.setDdlRun(false);
         serverConfig.setRegister(true);

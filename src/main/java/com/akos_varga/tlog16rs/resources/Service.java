@@ -17,13 +17,16 @@ import com.avaje.ebean.EbeanServer;
  *
  * @author Akos Varga
  */
-public class Service {
-
-    public static boolean isNewMonth(EbeanServer server, TimeLogger timelogger, int year, int month) {
-        return getMonth(server, timelogger, year, month) == null;
+public final class Service {
+    
+    private Service(){        
     }
 
-    public static WorkMonth getMonth(EbeanServer server, TimeLogger timelogger, int year, int month) {
+    public static boolean isNewMonth( TimeLogger timelogger, int year, int month) {
+        return getMonth(timelogger, year, month) == null;
+    }
+
+    public static WorkMonth getMonth(TimeLogger timelogger, int year, int month) {
         
         for (WorkMonth existingMonth : timelogger.getMonths()) {
             if (existingMonth.getDate().getYear() == year && existingMonth.getDate().getMonthValue() == month) {
@@ -31,22 +34,15 @@ public class Service {
             }
         }
 
-        /*
-        for(WorkMonth wm: server.find(WorkMonth.class).findList()){
-            if(wm.getDateString().equals(YearMonth.of(year, month).toString())){
-                return wm;
-            }
-        }
-        */
         return null;
     }
 
-    public static boolean isNewDay(EbeanServer server, TimeLogger timelogger, int year, int month, int day) {
-        return getDay(server, timelogger, year, month, day) == null;
+    public static boolean isNewDay(TimeLogger timelogger, int year, int month, int day) {
+        return getDay(timelogger, year, month, day) == null;
     }
 
-    public static WorkDay getDay(EbeanServer server, TimeLogger timelogger, int year, int month, int day) {
-        WorkMonth workMonth = getMonth(server, timelogger, year, month);
+    public static WorkDay getDay(TimeLogger timelogger, int year, int month, int day) {
+        WorkMonth workMonth = getMonth(timelogger, year, month);
         if (workMonth != null) {
             for (WorkDay existingDay : workMonth.getDays()) {
                 if (existingDay.getActualDay().getDayOfMonth() == day) {
@@ -57,12 +53,12 @@ public class Service {
         return null;
     }
 
-    public static boolean isNewTask(EbeanServer server, TimeLogger timelogger, String taskId, int year, int month, int day, String startTime) {
-        return getTask(server, timelogger, taskId, year, month, day, startTime) == null;
+    public static boolean isNewTask(TimeLogger timelogger, String taskId, int year, int month, int day, String startTime) {
+        return getTask(timelogger, taskId, year, month, day, startTime) == null;
     }
 
-    public static Task getTask(EbeanServer server, TimeLogger timelogger, String taskId, int year, int month, int day, String startTime) {
-        WorkDay workDay = getDay(server, timelogger, year, month, day);
+    public static Task getTask(TimeLogger timelogger, String taskId, int year, int month, int day, String startTime) {
+        WorkDay workDay = getDay(timelogger, year, month, day);
         if (workDay != null) {
             for (Task existingTask : workDay.getTasks()) {
                 if (existingTask.getTaskId().equals(taskId) && existingTask.getStartTime().toString().equals(startTime)) {
@@ -74,7 +70,7 @@ public class Service {
     }
 
     public static WorkDay getWorkDayOrAddIfNew(EbeanServer server, TimeLogger timelogger, int year, int month, int day) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, NotNewMonthException, FutureWorkException {
-        WorkDay workDay = getDay(server, timelogger, year, month, day);
+        WorkDay workDay = getDay(timelogger, year, month, day);
         if (workDay == null) {
             workDay = addNewWorkDay(server, timelogger, year, month, day);
         }
@@ -91,7 +87,7 @@ public class Service {
     }
 
     public static WorkMonth getWorkMonthOrAddIfNew(EbeanServer server, TimeLogger timelogger, int year, int month) throws NotNewMonthException {
-        WorkMonth workMonth = getMonth(server, timelogger, year, month);
+        WorkMonth workMonth = getMonth(timelogger, year, month);
         if (workMonth == null) {
             workMonth = addNewWorkMonth(server, timelogger, year, month);
             server.save(timelogger);
@@ -120,7 +116,7 @@ public class Service {
             }
         }
         server.update(workDay);
-        WorkMonth workMonth = getMonth(server, timelogger, year, month);
+        WorkMonth workMonth = getMonth(timelogger, year, month);
         server.update(workMonth);
         server.save(timelogger);
         

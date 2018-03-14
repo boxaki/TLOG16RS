@@ -44,8 +44,8 @@ public class TLOG16RSResource {
     }
 
     @GET
-    public List<WorkMonth> getAllMonths() {        
-        return server.find(WorkMonth.class).findList();        
+    public List<WorkMonth> getAllMonths() {
+        return server.find(WorkMonth.class).findList();
     }
 
     @POST
@@ -71,10 +71,10 @@ public class TLOG16RSResource {
 
         int year = dayRB.getYear();
         int month = dayRB.getMonth();
-        int day = dayRB.getDay();       
+        int day = dayRB.getDay();
 
         try {
-            if (isNewDay(server, timelogger, year, month, day)) {
+            if (isNewDay(timelogger, year, month, day)) {
                 workDay = new WorkDay(dayRB.getRequiredMinPerDay(), year, month, day);
                 WorkMonth workMonth = getWorkMonthOrAddIfNew(server, timelogger, year, month);
                 workMonth.addWorkDay(workDay);
@@ -101,12 +101,11 @@ public class TLOG16RSResource {
             newTask = new Task(task.getTaskId(), task.getStartTime(), task.getStartTime(), task.getComment());
             WorkDay workDay = getWorkDayOrAddIfNew(server, timelogger, year, month, day);
             workDay.addTask(newTask);
-            
+
             server.save(workDay);
-            WorkMonth wm = getMonth(server, timelogger, year, month);
+            WorkMonth wm = getMonth(timelogger, year, month);
             server.save(wm);
             server.save(timelogger);
-            
 
         } catch (NotNewMonthException | NotExpectedTimeOrderException | EmptyTimeFieldException | InvalidTaskIdException | NoTaskIdException | FutureWorkException | NotSeparatedTimesException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
@@ -122,11 +121,11 @@ public class TLOG16RSResource {
         int month = taskRB.getMonth();
         int day = taskRB.getDay();
 
-        Task savedTask = getTask(server, timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
+        Task savedTask = getTask(timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
         Task newTask = null;
         try {
             newTask = new Task(taskRB.getTaskId(), taskRB.getStartTime(), taskRB.getEndTime(), savedTask == null ? "" : savedTask.getComment());
-            newTask = modifyTaskIfPossible(server, timelogger, savedTask, newTask, year, month, day);           
+            newTask = modifyTaskIfPossible(server, timelogger, savedTask, newTask, year, month, day);
 
         } catch (NotExpectedTimeOrderException | EmptyTimeFieldException | InvalidTaskIdException | NoTaskIdException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException | NotNewMonthException | FutureWorkException | NotSeparatedTimesException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
@@ -143,11 +142,11 @@ public class TLOG16RSResource {
         int month = taskRB.getMonth();
         int day = taskRB.getDay();
 
-        Task savedTask = getTask(server, timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
+        Task savedTask = getTask(timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
         Task newTask = null;
         try {
             newTask = new Task(taskRB.getNewTaskId(), taskRB.getNewStartTime(), taskRB.getNewEndTime(), taskRB.getNewComment());
-            newTask = modifyTaskIfPossible(server, timelogger, savedTask, newTask, year, month, day);           
+            newTask = modifyTaskIfPossible(server, timelogger, savedTask, newTask, year, month, day);
 
         } catch (NotExpectedTimeOrderException | EmptyTimeFieldException | InvalidTaskIdException | NoTaskIdException | FutureWorkException | NotNewMonthException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException | NotSeparatedTimesException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
@@ -159,17 +158,17 @@ public class TLOG16RSResource {
     @PUT
     @Path("/workdays/tasks/delete")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Task deleteTask(DeleteTaskRB taskRB) { 
+    public Task deleteTask(DeleteTaskRB taskRB) {
         int year = taskRB.getYear();
         int month = taskRB.getMonth();
         int day = taskRB.getDay();
 
-        Task taskToDelete = getTask(server, timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
+        Task taskToDelete = getTask(timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
         if (taskToDelete != null) {
-            WorkDay workDay = getDay(server, timelogger, year, month, day); 
+            WorkDay workDay = getDay(timelogger, year, month, day);
             workDay.getTasks().remove(taskToDelete);
             server.update(workDay);
-            WorkMonth workMonth = getMonth(server, timelogger, year, month);
+            WorkMonth workMonth = getMonth(timelogger, year, month);
             server.update(workMonth);
             server.save(timelogger);
         }
@@ -184,11 +183,7 @@ public class TLOG16RSResource {
         timelogger = new TimeLogger("Akos Varga");
         server.save(timelogger);
 
-        if (timelogger.getMonths().isEmpty()) {
-            return null;
-        } else {
-            return timelogger.getMonths();
-        }
+        return null;       
     }
 
     @GET
@@ -203,7 +198,13 @@ public class TLOG16RSResource {
             log.error(ex.getClass() + " " + ex.getMessage());
         }
 
-        return workMonth.getDays();
+        List<WorkDay> daysOfMonth = null;
+        if (workMonth != null) {
+            daysOfMonth = workMonth.getDays();
+        } 
+        
+        return daysOfMonth;
+
     }
 
     @GET
@@ -222,7 +223,12 @@ public class TLOG16RSResource {
         } catch (FutureWorkException | NotNewMonthException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
         }
-        return workDay.getTasks();
+        
+        List<Task> tasksOfDay = null;
+        if(workDay != null){
+            tasksOfDay = workDay.getTasks();
+        }
+        return tasksOfDay;
     }
 
 }

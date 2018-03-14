@@ -18,5 +18,5 @@ public class TLOG16RSConfiguration extends Configuration {
     @NotEmpty
     protected String password;
     @NotEmpty
-    protected String server_name;
+    protected String serverName;
 }

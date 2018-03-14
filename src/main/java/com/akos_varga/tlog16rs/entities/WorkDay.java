@@ -28,8 +28,8 @@ import lombok.Setter;
 @Entity
 public class WorkDay {
     
-    private final static int DEFAULT_REQUIRED_MIN_PER_DAY = 450;
-    private final static LocalDate DEFAULT_ACTUAL_DAY = LocalDate.now();
+    private static final int DEFAULT_REQUIRED_MIN_PER_DAY = 450;
+    private static final LocalDate DEFAULT_ACTUAL_DAY = LocalDate.now();
     
     @Setter
     @Id

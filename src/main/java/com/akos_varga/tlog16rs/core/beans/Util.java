@@ -10,7 +10,10 @@ import java.util.*;
  * @author Akos Varga
  * @version 0.5.0
  */
-public class Util {
+public final class Util {
+    
+    private Util(){        
+    }
 
     /**
      * Rounds a time interval to the multiples of 15 minutes. Only sets the end
@@ -44,12 +47,7 @@ public class Util {
     public static boolean isSeparatedTime(Task newTask, List<Task> existingTasks) throws EmptyTimeFieldException {        
         LocalTime newTaskStartTime = newTask.getStartTime();
         LocalTime newTaskEndTime = newTask.getEndTime();
-        /*
-        matchingTask = existingTasks.stream()
-                .filter(task -> task.getStartTime().isBefore(newTask.getEndTime()) && newTask.getStartTime().isBefore(task.getEndTime()))                
-                .findFirst()
-                .orElse(null);
-         */
+       
         for (Task existingTask : existingTasks) {
             LocalTime existingTaskStartTime = existingTask.getStartTime();
             LocalTime existingTaskEndTime = existingTask.getEndTime();

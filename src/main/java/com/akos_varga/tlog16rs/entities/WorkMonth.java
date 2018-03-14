@@ -28,7 +28,7 @@ import javax.persistence.Transient;
 @Entity
 public class WorkMonth {
 
-    private final static boolean WEEKEND_DISABLED = false;
+    private static final boolean WEEKEND_DISABLED = false;
     
     @Id
     @GeneratedValue
@@ -157,9 +157,6 @@ public class WorkMonth {
     }
 
     private static class YearMonthSerializer extends JsonSerializer<YearMonth> {
-
-        public YearMonthSerializer() {
-        }
 
         @Override
         public void serialize(YearMonth t, JsonGenerator jg, SerializerProvider sp) throws IOException {

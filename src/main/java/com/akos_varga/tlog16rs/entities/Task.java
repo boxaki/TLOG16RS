@@ -26,6 +26,7 @@ public class Task {
 
     private static final String VALID_REDMINE_TASKID = "\\d{4}";
     private static final String VALID_LT_TASKID = "LT-\\d{4}";
+    private static final String END_TIME = "Missing end time!";
 
     @Setter
     @Id
@@ -37,7 +38,7 @@ public class Task {
     @JsonSerialize(using = LocalTimeSerializer.class)
     private LocalTime endTime;
     private String comment;
-    private long min_per_task;
+    private long minPerTask;
 
     /**
      * Constructs a new Task if the parameter is a valid Id. Leaves the time
@@ -165,7 +166,7 @@ public class Task {
      */
     public LocalTime getEndTime() throws EmptyTimeFieldException {
         if (endTime == null) {
-            throw new EmptyTimeFieldException("Missing end time!");
+            throw new EmptyTimeFieldException(END_TIME);
         }
         return endTime;
     }
@@ -188,7 +189,7 @@ public class Task {
      */
     public final void setEndTime(String endTime) throws NotExpectedTimeOrderException, EmptyTimeFieldException {
         if (endTime == null) {
-            throw new EmptyTimeFieldException("Missing end time!");
+            throw new EmptyTimeFieldException(END_TIME);
         }
         setEndTime(LocalTime.parse(endTime));
     }
@@ -202,7 +203,7 @@ public class Task {
      */
     public final void setEndTime(LocalTime endTime) throws NotExpectedTimeOrderException, EmptyTimeFieldException {
         if(endTime == null){
-           throw new EmptyTimeFieldException("Missing end time!"); 
+           throw new EmptyTimeFieldException(END_TIME); 
         }
 
         if (!startTime.isAfter(endTime)) {
@@ -248,7 +249,7 @@ public class Task {
     
     private void setMinPerTask(){
         if(startTime != null && endTime != null){
-            min_per_task = Duration.between(startTime, endTime).toMinutes();
+            minPerTask = Duration.between(startTime, endTime).toMinutes();
         }
     }
 

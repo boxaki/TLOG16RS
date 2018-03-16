@@ -1,5 +1,16 @@
 version: '2'
 services:
+  tlog-backend:
+    image: polc/tlog16rs
+    container_name: tlog-backend
+    networks:
+    - tlog
+    ports:
+    - "9080:8080"
+    environment:
+    - DB_USER=timelogger
+    - DB_PASS=633Ym2aZ5b9Wtzh4EJc4pANx
+    - DB_URL=jdbc:mariadb://mariadb:3306/timelogger
   mariadb:
     image: mariadb:5.5
     container_name: mariadb

@@ -12,7 +12,7 @@ services:
     - DB_PASS=633Ym2aZ5b9Wtzh4EJc4pANx
     - DB_URL=jdbc:mariadb://mariadb:3306/timelogger
   mariadb:
-    image: mariadb:5.5
+    image: mariadb:5.5.51
     container_name: mariadb
     networks:
     - tlog

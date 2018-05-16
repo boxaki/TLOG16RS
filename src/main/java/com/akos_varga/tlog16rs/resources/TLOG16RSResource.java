@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import static com.akos_varga.tlog16rs.resources.Service.*;
 import com.avaje.ebean.EbeanServer;
 import java.time.LocalDate;
+import javax.ws.rs.core.Response;
 
 @Slf4j
 @Path("/timelogger/workmonths")
@@ -66,8 +67,9 @@ public class TLOG16RSResource {
     @POST
     @Path("/workdays")
     @Consumes(MediaType.APPLICATION_JSON)
-    public WorkDay addNewDay(WorkDayRB dayRB) {
-        WorkDay workDay = null;
+    public Response addNewDay(WorkDayRB dayRB) {
+        //WorkDay workDay = null;
+        Response response = Response.status(Response.Status.OK).build();
 
         int year = dayRB.getYear();
         int month = dayRB.getMonth();
@@ -75,16 +77,47 @@ public class TLOG16RSResource {
 
         try {
             if (isNewDay(timelogger, year, month, day)) {
-                workDay = new WorkDay(dayRB.getRequiredMinPerDay(), year, month, day);
+                WorkDay workDay = new WorkDay(dayRB.getRequiredMinPerDay(), year, month, day);
                 WorkMonth workMonth = getWorkMonthOrAddIfNew(server, timelogger, year, month);
                 workMonth.addWorkDay(workDay);
                 server.update(workMonth);
                 server.save(timelogger); //insert
             }
-        } catch (NegativeMinutesOfWorkException | FutureWorkException | NotNewMonthException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException ex) {
+        } catch (NegativeMinutesOfWorkException | FutureWorkException | NotNewMonthException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+        } catch (WeekendNotEnabledException ex) {
+            log.error(ex.getClass() + " " + ex.getMessage());
+            response = Response.status(418).build();
         }
-        return workDay;
+        return response;
+    }
+    
+    @POST
+    @Path("/weekends")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addWeekendDay(WorkDayRB dayRB){
+         Response response = Response.status(Response.Status.OK).build();
+
+        int year = dayRB.getYear();
+        int month = dayRB.getMonth();
+        int day = dayRB.getDay();
+
+        try {
+            if (isNewDay(timelogger, year, month, day)) {
+                WorkDay workDay = new WorkDay(dayRB.getRequiredMinPerDay(), year, month, day);
+                WorkMonth workMonth = getWorkMonthOrAddIfNew(server, timelogger, year, month);
+                workMonth.addWorkDay(workDay, true);
+                server.update(workMonth);
+                server.save(timelogger); //insert
+            }
+        } catch (NegativeMinutesOfWorkException | FutureWorkException | NotNewMonthException | NotNewDateException | NotTheSameMonthException ex) {
+            log.error(ex.getClass() + " " + ex.getMessage());
+        } catch (WeekendNotEnabledException ex) {
+            log.error(ex.getClass() + " " + ex.getMessage());
+            response = Response.status(418).build();
+        }
+        
+        return response;
     }
 
     @POST
@@ -183,7 +216,7 @@ public class TLOG16RSResource {
         timelogger = new TimeLogger("Akos Varga");
         server.save(timelogger);
 
-        return null;       
+        return null;
     }
 
     @GET
@@ -201,8 +234,8 @@ public class TLOG16RSResource {
         List<WorkDay> daysOfMonth = null;
         if (workMonth != null) {
             daysOfMonth = workMonth.getDays();
-        } 
-        
+        }
+
         return daysOfMonth;
 
     }
@@ -223,9 +256,9 @@ public class TLOG16RSResource {
         } catch (FutureWorkException | NotNewMonthException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
         }
-        
+
         List<Task> tasksOfDay = null;
-        if(workDay != null){
+        if (workDay != null) {
             tasksOfDay = workDay.getTasks();
         }
         return tasksOfDay;

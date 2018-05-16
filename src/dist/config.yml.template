@@ -1,0 +1,5 @@
+driver: org.mariadb.jdbc.Driver
+url: {{ .Env.DB_URL }}
+username: {{ .Env.DB_USER }}
+password: {{ .Env.DB_PASS }}
+serverName: timelogger

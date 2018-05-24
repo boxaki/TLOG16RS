@@ -2,7 +2,9 @@ package com.akos_varga.tlog16rs.core.beans;
 
 import com.akos_varga.tlog16rs.entities.Task;
 import com.akos_varga.tlog16rs.core.exceptions.*;
+import java.text.ParseException;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -11,8 +13,8 @@ import java.util.*;
  * @version 0.5.0
  */
 public final class Util {
-    
-    private Util(){        
+
+    private Util() {
     }
 
     /**
@@ -44,10 +46,10 @@ public final class Util {
      * @throws EmptyTimeFieldException if <code>newTask</code> has missing time
      * field.
      */
-    public static boolean isSeparatedTime(Task newTask, List<Task> existingTasks) throws EmptyTimeFieldException {        
+    public static boolean isSeparatedTime(Task newTask, List<Task> existingTasks) throws EmptyTimeFieldException {
         LocalTime newTaskStartTime = newTask.getStartTime();
         LocalTime newTaskEndTime = newTask.getEndTime();
-       
+
         for (Task existingTask : existingTasks) {
             LocalTime existingTaskStartTime = existingTask.getStartTime();
             LocalTime existingTaskEndTime = existingTask.getEndTime();
@@ -59,8 +61,8 @@ public final class Util {
             }
             if (existingTask.getStartTime().isBefore(newTask.getEndTime()) && newTask.getStartTime().isBefore(existingTask.getEndTime())) {
                 return false;
-            }        
-        }        
+            }
+        }
         return true;
     }
 
@@ -91,6 +93,23 @@ public final class Util {
 
     public static boolean isMultipleQuarterHour(long minutes) {
         return minutes % 15 == 0;
+    }
+
+    public static LocalTime parseTime(String time) {
+        
+        LocalTime parsedTime;
+        if (time.matches("([01]\\d|(2[0-3])):[0-5]\\d")) {
+            parsedTime = LocalTime.parse(time);
+        } else if (time.matches("([01]\\d|(2[0-3]))[0-5]\\d")) {
+            parsedTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HHmm"));
+        } else if (time.matches("[0-9]:[0-5]\\d")){
+            parsedTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("H:mm"));            
+        } else if( time.matches("[0-9][0-5]\\d")){
+            parsedTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("Hmm"));
+        } else { 
+            throw new RuntimeException("Time cannot be parsed!");
+        }
+        return parsedTime;
     }
 
 }

@@ -138,7 +138,8 @@ public class Task {
         if (startTime == null) {
             throw new EmptyTimeFieldException("Missing start time!");
         }
-        setStartTime(LocalTime.parse(startTime));        
+        //setStartTime(LocalTime.parse(startTime));        
+        setStartTime(Util.parseTime(startTime));
     }
 
     /**
@@ -191,7 +192,8 @@ public class Task {
         if (endTime == null) {
             throw new EmptyTimeFieldException(END_TIME);
         }
-        setEndTime(LocalTime.parse(endTime));
+        //setEndTime(LocalTime.parse(endTime));
+        setEndTime(Util.parseTime(endTime));
     }
 
     /**

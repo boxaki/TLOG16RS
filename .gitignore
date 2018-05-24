@@ -6,3 +6,4 @@ database/
 *.sql
 private/
 .nb-gradle-properties
+dBI.sh

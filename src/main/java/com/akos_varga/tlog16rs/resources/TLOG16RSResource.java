@@ -7,7 +7,6 @@ import com.akos_varga.tlog16rs.core.beans.WorkDayRB;
 import com.akos_varga.tlog16rs.core.beans.DeleteTaskRB;
 import com.akos_varga.tlog16rs.core.beans.FinishTaskRB;
 import com.akos_varga.tlog16rs.entities.Task;
-import com.akos_varga.tlog16rs.entities.TimeLogger;
 import com.akos_varga.tlog16rs.entities.WorkDay;
 import com.akos_varga.tlog16rs.entities.WorkMonth;
 import com.akos_varga.tlog16rs.core.beans.WorkMonthRB;
@@ -22,246 +21,191 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
-import static com.akos_varga.tlog16rs.resources.Service.*;
-import com.avaje.ebean.EbeanServer;
-import java.time.LocalDate;
 import javax.ws.rs.core.Response;
 
 @Slf4j
 @Path("/timelogger/workmonths")
+// a produces-t ki kell e szedni a response miatt vagy maradhat?
 @Produces(MediaType.APPLICATION_JSON)
 public class TLOG16RSResource {
 
-    private final EbeanServer server;
-    TimeLogger timelogger;
+    Service service;
 
     public TLOG16RSResource(TLOG16RSConfiguration config) {
-        CreateDatabase database = new CreateDatabase(config);
-        server = database.getEbeanServer();
-        timelogger = server.find(TimeLogger.class).findUnique();
-        if (timelogger == null) {
-            timelogger = new TimeLogger("Akos Varga");
-        }
+        service = new Service(config);       
     }
 
     @GET
-    public List<WorkMonth> getAllMonths() {
-        return server.find(WorkMonth.class).findList();
+    public Response getAllMonths() {
+        
+        return Response.ok(service.getAllMonths()).build();
+
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public WorkMonth addNewMonth(WorkMonthRB month) {
-        WorkMonth newWorkMonth = null;
+    public Response addNewMonth(WorkMonthRB month) {
 
         try {
-            newWorkMonth = new WorkMonth(month.getYear(), month.getMonth());
-            timelogger.addNewMonth(newWorkMonth);
-            server.save(timelogger); //insert
+            WorkMonth newWorkMonth = service.addMonth(month.getYear(), month.getMonth()); 
+         
+            return Response.ok(newWorkMonth).build();
         } catch (NotNewMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            return Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         }
-        return newWorkMonth;
+
     }
 
     @POST
     @Path("/workdays")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addNewDay(WorkDayRB dayRB) {
-        //WorkDay workDay = null;
-        Response response = Response.status(Response.Status.OK).build();
-
-        int year = dayRB.getYear();
-        int month = dayRB.getMonth();
-        int day = dayRB.getDay();
 
         try {
-            if (isNewDay(timelogger, year, month, day)) {
-                WorkDay workDay = new WorkDay(dayRB.getRequiredMinPerDay(), year, month, day);
-                WorkMonth workMonth = getWorkMonthOrAddIfNew(server, timelogger, year, month);
-                workMonth.addWorkDay(workDay);
-                server.update(workMonth);
-                server.save(timelogger); //insert
+            WorkDay workDay = service.addNewWeekDay(dayRB.getRequiredMinPerDay(), dayRB.getYear(), dayRB.getMonth(), dayRB.getDay());
+            if (workDay != null) {
+                return Response.ok(workDay).build();
+            } else {
+                return Response.status(Response.Status.FORBIDDEN).build();
             }
+
         } catch (NegativeMinutesOfWorkException | FutureWorkException | NotNewMonthException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            return Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         } catch (WeekendNotEnabledException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
-            response = Response.status(418).build();
+            return Response.status(Response.Status.FOUND).build(); //307?
         }
-        return response;
+
     }
-    
+
     @POST
     @Path("/weekends")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addWeekendDay(WorkDayRB dayRB){
-         Response response = Response.status(Response.Status.OK).build();
-
-        int year = dayRB.getYear();
-        int month = dayRB.getMonth();
-        int day = dayRB.getDay();
+    public Response addWeekendDay(WorkDayRB dayRB) {
 
         try {
-            if (isNewDay(timelogger, year, month, day)) {
-                WorkDay workDay = new WorkDay(dayRB.getRequiredMinPerDay(), year, month, day);
-                WorkMonth workMonth = getWorkMonthOrAddIfNew(server, timelogger, year, month);
-                workMonth.addWorkDay(workDay, true);
-                server.update(workMonth);
-                server.save(timelogger); //insert
+            WorkDay workDay = service.addNewWeekendDay(dayRB.getRequiredMinPerDay(), dayRB.getYear(), dayRB.getMonth(), dayRB.getDay());
+            if (workDay != null) {
+                return Response.ok(workDay).build();
+            } else {
+                return Response.status(Response.Status.FORBIDDEN).build();
             }
+
         } catch (NegativeMinutesOfWorkException | FutureWorkException | NotNewMonthException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            return Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         } catch (WeekendNotEnabledException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
-            response = Response.status(418).build();
+            return Response.status(418).build();
         }
-        
-        return response;
+
     }
 
     @POST
     @Path("/workdays/tasks/start")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Task addNewTask(StartTaskRB task) {
-        Task newTask = null;
-
-        int year = task.getYear();
-        int month = task.getMonth();
-        int day = task.getDay();
+    public Response addNewTask(StartTaskRB task) {
+        Response response = Response.ok().build();
 
         try {
-            newTask = new Task(task.getTaskId(), task.getStartTime(), task.getStartTime(), task.getComment());
-            WorkDay workDay = getWorkDayOrAddIfNew(server, timelogger, year, month, day);
-            workDay.addTask(newTask);
-
-            server.save(workDay);
-            WorkMonth wm = getMonth(timelogger, year, month);
-            server.save(wm);
-            server.save(timelogger);
+            Task newTask = service.addNewTask(task.getYear(), task.getMonth(), task.getDay(), task.getTaskId(), task.getStartTime(), task.getComment());
+            response = Response.ok(newTask).build();
 
         } catch (NotNewMonthException | NotExpectedTimeOrderException | EmptyTimeFieldException | InvalidTaskIdException | NoTaskIdException | FutureWorkException | NotSeparatedTimesException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            response = Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         }
-        return newTask;
+        return response;
     }
 
     @PUT
     @Path("/workdays/tasks/finish")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Task finishTask(FinishTaskRB taskRB) {
-        int year = taskRB.getYear();
-        int month = taskRB.getMonth();
-        int day = taskRB.getDay();
+    public Response finishTask(FinishTaskRB taskRB) {
 
-        Task savedTask = getTask(timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
-        Task newTask = null;
         try {
-            newTask = new Task(taskRB.getTaskId(), taskRB.getStartTime(), taskRB.getEndTime(), savedTask == null ? "" : savedTask.getComment());
-            newTask = modifyTaskIfPossible(server, timelogger, savedTask, newTask, year, month, day);
+            Task newTask = service.finishTask(taskRB.getTaskId(), taskRB.getYear(), taskRB.getMonth(), taskRB.getDay(), taskRB.getStartTime(), taskRB.getEndTime());
+            return Response.ok(newTask).build();
 
         } catch (NotExpectedTimeOrderException | EmptyTimeFieldException | InvalidTaskIdException | NoTaskIdException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException | NotNewMonthException | FutureWorkException | NotSeparatedTimesException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            return Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         }
-
-        return newTask;
     }
 
     @PUT
     @Path("/workdays/tasks/modify")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Task modifyOrCreateTask(ModifyTaskRB taskRB) {
-        int year = taskRB.getYear();
-        int month = taskRB.getMonth();
-        int day = taskRB.getDay();
+    public Response modifyOrCreateTask(ModifyTaskRB taskRB) {
+        Response response = Response.status(Response.Status.OK).build();
 
-        Task savedTask = getTask(timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
-        Task newTask = null;
         try {
-            newTask = new Task(taskRB.getNewTaskId(), taskRB.getNewStartTime(), taskRB.getNewEndTime(), taskRB.getNewComment());
-            newTask = modifyTaskIfPossible(server, timelogger, savedTask, newTask, year, month, day);
+            Task newTask = service.modifyOrCreateTask(taskRB.getYear(), taskRB.getMonth(), taskRB.getDay(), taskRB.getTaskId(), taskRB.getStartTime(), taskRB.getNewTaskId(), taskRB.getNewStartTime(), taskRB.getNewEndTime(), taskRB.getNewComment());
+            response = Response.ok(newTask).build();
 
         } catch (NotExpectedTimeOrderException | EmptyTimeFieldException | InvalidTaskIdException | NoTaskIdException | FutureWorkException | NotNewMonthException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException | NotSeparatedTimesException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            response = Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         }
-        return newTask;
+        return response;
 
     }
 
     @PUT
     @Path("/workdays/tasks/delete")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Task deleteTask(DeleteTaskRB taskRB) {
-        int year = taskRB.getYear();
-        int month = taskRB.getMonth();
-        int day = taskRB.getDay();
+    public Response deleteTask(DeleteTaskRB taskRB) {
 
-        Task taskToDelete = getTask(timelogger, taskRB.getTaskId(), year, month, day, taskRB.getStartTime());
-        if (taskToDelete != null) {
-            WorkDay workDay = getDay(timelogger, year, month, day);
-            workDay.getTasks().remove(taskToDelete);
-            server.update(workDay);
-            WorkMonth workMonth = getMonth(timelogger, year, month);
-            server.update(workMonth);
-            server.save(timelogger);
+        Task deletedTask = service.deleteTask(taskRB.getYear(), taskRB.getMonth(), taskRB.getDay(), taskRB.getTaskId(), taskRB.getStartTime());
+        if (deletedTask != null) {
+            return Response.ok(deletedTask).build();
         }
-        return taskToDelete;
+        return Response.noContent().build();
     }
 
     @PUT
     @Path("/deleteall")
-    public List<WorkMonth> deleteAll() {
-        //vagy toroljem a honapokat, akkor marad az id
-        server.delete(timelogger);
-        timelogger = new TimeLogger("Akos Varga");
-        server.save(timelogger);
+    public Response deleteAll() {
+        service.deleteAll();
 
-        return null;
+        //vagy toroljem a honapokat, akkor marad az id
+        //return Response.ok().build();
+        return Response.noContent().build();
     }
 
     @GET
     @Path("/{year}/{month}")
-    public List<WorkDay> getDaysOfMonth(@PathParam(value = "year") int year, @PathParam(value = "month") int month) {
-        WorkMonth workMonth = null;
+    public Response getDaysOfMonth(@PathParam(value = "year") int year, @PathParam(value = "month") int month) {
+        Response response = Response.ok().build();
+
         try {
-            workMonth = getWorkMonthOrAddIfNew(server, timelogger, year, month);
-            server.save(timelogger);
+            List<WorkDay> daysOfMonth = service.getDaysOfMonth(year, month);
+            response = Response.ok(daysOfMonth).build();
 
         } catch (NotNewMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            response = Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         }
 
-        List<WorkDay> daysOfMonth = null;
-        if (workMonth != null) {
-            daysOfMonth = workMonth.getDays();
-        }
-
-        return daysOfMonth;
+        return response;
 
     }
 
     @GET
     @Path("/{year}/{month}/{day}")
-    public List<Task> getTasksOfDay(@PathParam(value = "year") int year, @PathParam(value = "month") int month, @PathParam(value = "day") int day) {
-        WorkDay workDay = null;
+    public Response getTasksOfDay(@PathParam(value = "year") int year, @PathParam(value = "month") int month, @PathParam(value = "day") int day) {
         try {
-            workDay = getWorkDayOrAddIfNew(server, timelogger, year, month, day);
-            server.save(timelogger);
-            for (WorkDay wd : server.find(WorkDay.class).findList()) {
-                if (wd.getActualDay().equals(LocalDate.of(year, month, day))) {
-                    workDay = wd;
-                }
-            }
+            List<Task> tasksOfDay = service.getTasksOfDay(year, month, day);
+            return Response.ok(tasksOfDay).build();
+            
 
         } catch (FutureWorkException | NotNewMonthException | WeekendNotEnabledException | NotNewDateException | NotTheSameMonthException ex) {
             log.error(ex.getClass() + " " + ex.getMessage());
+            return Response.status(Response.Status.FORBIDDEN).entity(ex.getMessage()).build();
         }
 
-        List<Task> tasksOfDay = null;
-        if (workDay != null) {
-            tasksOfDay = workDay.getTasks();
-        }
-        return tasksOfDay;
     }
 
 }

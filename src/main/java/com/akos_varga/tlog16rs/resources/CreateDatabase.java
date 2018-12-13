@@ -2,7 +2,7 @@ package com.akos_varga.tlog16rs.resources;
 
 import com.akos_varga.tlog16rs.TLOG16RSConfiguration;
 import com.akos_varga.tlog16rs.entities.Task;
-import com.akos_varga.tlog16rs.entities.TimeLogger;
+import com.akos_varga.tlog16rs.entities.User;
 import com.akos_varga.tlog16rs.entities.WorkDay;
 import com.akos_varga.tlog16rs.entities.WorkMonth;
 import com.avaje.ebean.EbeanServer;
@@ -73,7 +73,7 @@ public class CreateDatabase {
         serverConfig.addClass(Task.class);
         serverConfig.addClass(WorkDay.class);
         serverConfig.addClass(WorkMonth.class);
-        serverConfig.addClass(TimeLogger.class);
+        serverConfig.addClass(User.class);
         serverConfig.setDefaultServer(true);
     }
 

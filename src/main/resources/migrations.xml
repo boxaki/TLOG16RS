@@ -16,7 +16,7 @@
         <addColumn tableName="time_logger">
             <column name="name" type="varchar(255)"/>
         </addColumn>
-    </changeSet>
+    </changeSet>   
     
     <changeSet id="2" author="akos_varga">
         <createTable tableName="work_month">
@@ -65,6 +65,7 @@
             onUpdate="RESTRICT"
         />
     </changeSet>
+    
     <changeSet id="4" author="akos_varga">
         <createTable tableName="task">
             <column name="id" type="int" autoIncrement="true">
@@ -88,6 +89,48 @@
             onDelete="CASCADE"
             onUpdate="RESTRICT"
         />
-    </changeSet>    
+    </changeSet>
+    
+    <changeSet id="5" author="akos_varga">
+        <renameTable oldTableName="time_logger" newTableName="user"/>        
+    </changeSet>
+    
+    <changeSet id="6" author="akos_varga">
+        <addColumn tableName="user">
+            <column name="password" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="7" author="akos_varga">
+        <addColumn tableName="user">
+            <column name="salt" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="8" author="akos_varga">
+        <dropForeignKeyConstraint 
+            baseTableName="work_month"
+            constraintName="fk_work_month_timelogger"/>
+    </changeSet>
+    
+    <changeSet id="9" author="akos_varga">
+        <renameColumn 
+            tableName="work_month"
+            oldColumnName="time_logger_id" 
+            newColumnName="user_id" 
+            columnDataType="int"/>
+    </changeSet>
+    
+    <changeSet id="10" author="akos_varga">
+        <addForeignKeyConstraint                         
+            baseTableName="work_month" 
+            baseColumnNames="user_id" 
+            constraintName="fk_work_month_user" 
+            referencedTableName="user" 
+            referencedColumnNames="id" 
+            onDelete="CASCADE" 
+            onUpdate="RESTRICT"            
+        />        
+    </changeSet>
     
 </databaseChangeLog>

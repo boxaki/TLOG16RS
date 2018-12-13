@@ -1,6 +1,5 @@
 package com.akos_varga.tlog16rs.entities;
 
-import com.akos_varga.tlog16rs.core.beans.Util;
 import com.akos_varga.tlog16rs.core.exceptions.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

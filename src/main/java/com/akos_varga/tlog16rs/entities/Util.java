@@ -1,8 +1,7 @@
-package com.akos_varga.tlog16rs.core.beans;
+package com.akos_varga.tlog16rs.entities;
 
 import com.akos_varga.tlog16rs.entities.Task;
 import com.akos_varga.tlog16rs.core.exceptions.*;
-import java.text.ParseException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;

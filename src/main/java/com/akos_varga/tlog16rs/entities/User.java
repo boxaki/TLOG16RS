@@ -19,20 +19,24 @@ import lombok.Setter;
  */
 @Getter
 @Entity
-public class TimeLogger {
+public class User {
     
-    @Setter
+    @Setter // kell e? tesztelni
     @Id
     @GeneratedValue
     private Integer id;
     
     private String name;
+    private String password;
+    private String salt;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private final List<WorkMonth> months;
 
-    public TimeLogger(String name) {
+    public User(String name, String password, String salt) {
         this.name = name;
+        this.password = password;
+        this.salt = salt;
         months = new ArrayList<>();
     }
 

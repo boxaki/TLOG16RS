@@ -52,12 +52,6 @@ public final class DBService {
     }
 
     public void login(String name, String password) throws UserNotFoundException, NoSuchAlgorithmException, AuthenticationFailureException {
-        /*
-        if (!isUserExists(name)) {
-            throw new UserNotFoundException("User not found!");
-        }
-         */
-
         User userToAuthenticate = getUser(name);
 
         String hashedPassword = createHash(password, userToAuthenticate.getSalt());
@@ -77,7 +71,7 @@ public final class DBService {
         WorkMonth newWorkMonth = new WorkMonth(year, month);
         user.addNewMonth(newWorkMonth);
 
-        server.save(user); //insert
+        server.save(user);
 
         return newWorkMonth;
     }
@@ -128,7 +122,7 @@ public final class DBService {
         return workDay.getTasks();
     }
 
-    // atnevezes startNewTask
+    // atnevezes startNewTask?
     public Task addNewTask(String userName, int year, int month, int day, String taskId, String startTime, String comment) throws NotExpectedTimeOrderException, EmptyTimeFieldException, InvalidTaskIdException, NoTaskIdException, WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, NotNewMonthException, FutureWorkException, NotSeparatedTimesException, UserNotFoundException {
         User user = getUser(userName);
         Task newTask = new Task(taskId, startTime, startTime, comment);
@@ -181,7 +175,7 @@ public final class DBService {
         User user = server.find(User.class)
                 .where()
                 .eq("name", name)
-                .findUnique();
+                .findUnique();  // findUser method-be
 
         if (user == null) {
             throw new UserNotFoundException("User not found");
@@ -203,6 +197,7 @@ public final class DBService {
 
         for (WorkMonth existingMonth : user.getMonths()) {
             if (existingMonth.getDate().getYear() == year && existingMonth.getDate().getMonthValue() == month) {
+                
                 return existingMonth;
             }
         }
@@ -262,18 +257,17 @@ public final class DBService {
         return null;
     }
 
-    // originalTask -> existingTask
-    private Task modifyTaskIfPossible(User user, Task originalTask, Task newTask, int year, int month, int day) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, NotNewMonthException, FutureWorkException, EmptyTimeFieldException, NotSeparatedTimesException {
+    private Task modifyTaskIfPossible(User user, Task existingTask, Task newTask, int year, int month, int day) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, NotNewMonthException, FutureWorkException, EmptyTimeFieldException, NotSeparatedTimesException {
         WorkDay workDay = getWorkDayOrAddIfNew(user, year, month, day);
-        if (originalTask != null) {
-            workDay.getTasks().remove(originalTask);
+        if (existingTask != null) {
+            workDay.getTasks().remove(existingTask);
         }
         try {
             workDay.addTask(newTask);
         } catch (NotSeparatedTimesException ex) {
-            if (originalTask != null) {
-                workDay.addTask(originalTask);
-                newTask = originalTask;
+            if (existingTask != null) {
+                workDay.addTask(existingTask);
+                newTask = existingTask;
             }
         }
         server.update(workDay);
@@ -284,16 +278,13 @@ public final class DBService {
         return newTask;
     }
 
-    public void deleteAll(String userName) throws UserNotFoundException { // nem jo, csak a fieldeket allitsa uresre
+    public void deleteAll(String userName) throws UserNotFoundException {
         User user = getUser(userName);
-        User newUser = new User(user.getName(), user.getPassword(), user.getSalt());
 
-        server.delete(user); // kell e save
-        user = newUser;
-        server.save(user);
+        server.delete(user);
     }
 
-    private boolean isUserExists(String name) {
+    private boolean isUserExists(String name) { // findUser-t hasznalja
         try {
             return getUser(name) != null;
 
